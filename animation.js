@@ -7,39 +7,69 @@ canvas.height = window.innerHeight;
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  resetBalls(); // re-center on resize
 });
 
-const particles = [];
+let ball1, ball2;
 
-function createParticle() {
+function createBall(x, y, vx) {
   return {
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    vx: (Math.random() - 0.5) * 1.5,
-    vy: (Math.random() - 0.5) * 1.5,
-    radius: 1 + Math.random() * 2,
+    x,
+    y,
+    vx,
+    vy: 0,
+    radius: 50,
+    color: "rgba(100, 200, 255, 0.9)",
   };
 }
 
-for (let i = 0; i < 100; i++) {
-  particles.push(createParticle());
+function resetBalls() {
+  const midY = canvas.height / 2;
+  const offset = 150;
+  ball1 = createBall(canvas.width / 2 - offset, midY, 3);
+  ball2 = createBall(canvas.width / 2 + offset, midY, -3);
+}
+resetBalls();
+
+function drawBall(ball) {
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+  ctx.fillStyle = ball.color;
+  ctx.fill();
+}
+
+function detectCollision(b1, b2) {
+  const dx = b1.x - b2.x;
+  const dy = b1.y - b2.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  return distance < b1.radius + b2.radius;
 }
 
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (let p of particles) {
-    p.x += p.vx;
-    p.y += p.vy;
 
-    // Bounce off edges
-    if (p.x <= 0 || p.x >= canvas.width) p.vx *= -1;
-    if (p.y <= 0 || p.y >= canvas.height) p.vy *= -1;
+  // Update positions
+  ball1.x += ball1.vx;
+  ball2.x += ball2.vx;
 
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
-    ctx.fill();
+  // Detect collision and reverse velocity
+  if (detectCollision(ball1, ball2)) {
+    const temp = ball1.vx;
+    ball1.vx = ball2.vx;
+    ball2.vx = temp;
   }
+
+  // Apply friction (slow down)
+  ball1.vx *= 0.98;
+  ball2.vx *= 0.98;
+
+  // Stop if very slow
+  if (Math.abs(ball1.vx) < 0.05) ball1.vx = 0;
+  if (Math.abs(ball2.vx) < 0.05) ball2.vx = 0;
+
+  drawBall(ball1);
+  drawBall(ball2);
+
   requestAnimationFrame(animate);
 }
 
