@@ -9,65 +9,79 @@ window.addEventListener("resize", () => {
   canvas.height = window.innerHeight;
 });
 
-const friction = 0.98;
-const radius = 40;
+// Ball properties
+const radius1 = 40;
+const radius2 = 60;
 
-// Two big balls
+const mass1 = 2; // smaller mass
+const mass2 = 4; // bigger mass
+
 let ball1 = {
-  x: canvas.width / 2 - 150,
+  x: canvas.width / 2 - 300,
   y: canvas.height / 2,
-  vx: 3,
-  vy: 0,
-  color: "#00BFFF"
+  vx: 4,
+  mass: mass1,
+  radius: radius1,
+  color: "#00BFFF",
 };
 
 let ball2 = {
-  x: canvas.width / 2 + 150,
+  x: canvas.width / 2 + 300,
   y: canvas.height / 2,
-  vx: -3,
-  vy: 0,
-  color: "#FF6347"
+  vx: -2,
+  mass: mass2,
+  radius: radius2,
+  color: "#FF6347",
 };
 
-function drawBall(ball) {
+let hasCollided = false;
+
+function drawBall(ball, label) {
   ctx.beginPath();
-  ctx.arc(ball.x, ball.y, radius, 0, Math.PI * 2);
+  ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
   ctx.fillStyle = ball.color;
   ctx.fill();
+
+  ctx.fillStyle = "white";
+  ctx.font = "16px Arial";
+  ctx.fillText(label, ball.x - 10, ball.y + 5);
 }
 
 function updateBall(ball) {
   ball.x += ball.vx;
-  ball.y += ball.vy;
-  ball.vx *= friction;
-  ball.vy *= friction;
-
-  // Stop if velocity is very low
-  if (Math.abs(ball.vx) < 0.05) ball.vx = 0;
-  if (Math.abs(ball.vy) < 0.05) ball.vy = 0;
 }
 
-function detectCollision() {
+function detectAndHandleCollision() {
   const dx = ball2.x - ball1.x;
-  const distance = Math.abs(dx);
-  if (distance <= radius * 2 && dx > 0) {
-    // Simple elastic collision: swap and reverse velocities
-    let tempVx = ball1.vx;
-    ball1.vx = -ball2.vx;
-    ball2.vx = -tempVx;
+  const minDist = ball1.radius + ball2.radius;
+
+  if (!hasCollided && Math.abs(dx) <= minDist) {
+    hasCollided = true;
+
+    // Use elastic collision equations
+    const v1 = ball1.vx;
+    const v2 = ball2.vx;
+    const m1 = ball1.mass;
+    const m2 = ball2.mass;
+
+    const v1Final = ((m1 - m2) / (m1 + m2)) * v1 + (2 * m2 / (m1 + m2)) * v2;
+    const v2Final = ((m2 - m1) / (m1 + m2)) * v2 + (2 * m1 / (m1 + m2)) * v1;
+
+    ball1.vx = v1Final;
+    ball2.vx = v2Final;
   }
 }
 
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  drawBall(ball1);
-  drawBall(ball2);
+  drawBall(ball1, "m₁");
+  drawBall(ball2, "m₂");
 
   updateBall(ball1);
   updateBall(ball2);
 
-  detectCollision();
+  detectAndHandleCollision();
 
   requestAnimationFrame(animate);
 }
