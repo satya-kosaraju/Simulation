@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Simulation</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: black;
+    }
+    #bgCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+    .content {
+      position: relative;
+      z-index: 1;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 20vh;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas"></canvas>
+  <div class="content">
+    <h1>Welcome to Satya's Simulation</h1>
+    <p>Background simulation inspired by SEAL Lab</p>
+  </div>
+  <script src="animation.js"></script>
+</body>
+</html>
